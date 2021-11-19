@@ -28,12 +28,18 @@ const SearchCardContainer = styled.div`
   grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-gap: 16px;
 `;
+const CenterH1 = styled.h1`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
 
 function SearchPage(props) {
   const { countDownTime, refreshEnabled = true, toggleTimer } = props;
   const context = useContext(ProfileContext);
   const navigate = useNavigate();
-  const { profiles = [], loading, fetchData, dispatch } = context;
+  const { profiles = [], loading, error, fetchData, dispatch } = context;
 
   const handleSortAscending = () => {
     dispatch({ type: 'ascending' });
@@ -67,10 +73,14 @@ function SearchPage(props) {
       <Header />
       <MainPage>
         <RightInfoGroup>
-          {refreshEnabled && <h3>{`Seconds left before data refetch: ${countDownTime}`}</h3>}
-          <StyledButton onClick={toggleTimerFunc}>
-            {refreshEnabled ? 'Disable' : 'Enable'} Timer
-          </StyledButton>
+          {refreshEnabled && !error && (
+            <h3>{`Seconds left before data refetch: ${countDownTime}`}</h3>
+          )}
+          {!error && (
+            <StyledButton onClick={toggleTimerFunc}>
+              {refreshEnabled ? 'Disable' : 'Enable'} Timer
+            </StyledButton>
+          )}
         </RightInfoGroup>
         <RightInfoGroup>
           <MinimalButton disabled>
@@ -83,28 +93,33 @@ function SearchPage(props) {
             <FilterImg src="./descending.svg" alt="Sort descending" />
           </MinimalButton>
         </RightInfoGroup>
-        {loading ? (
-          <LoadingContainer>
-            <ClipLoader color={'blue'} loading={true} size={150} />
-          </LoadingContainer>
-        ) : (
-          <SearchCardContainer>
-            {Array.isArray(profiles) &&
-              profiles.length > 0 &&
-              profiles.map((profile, index) => (
-                <div key={`search-card-wrapper-${index}`} onClick={() => handleCardClick(profile)}>
-                  <SearchCard
-                    key={`search-card-${profile.id}-index`}
-                    photoUrl={profile.photoUrl}
-                    handle={profile.handle}
-                    location={profile.location}
-                    age={profile.age}
-                    photoCount={profile.photoCount}
-                  />
-                </div>
-              ))}
-          </SearchCardContainer>
-        )}
+        {error && <CenterH1>Error Loading Data</CenterH1>}
+        {!error &&
+          (loading ? (
+            <LoadingContainer>
+              <ClipLoader color={'blue'} loading={true} size={150} />
+            </LoadingContainer>
+          ) : (
+            <SearchCardContainer>
+              {Array.isArray(profiles) &&
+                profiles.length > 0 &&
+                profiles.map((profile, index) => (
+                  <div
+                    key={`search-card-wrapper-${index}`}
+                    onClick={() => handleCardClick(profile)}
+                  >
+                    <SearchCard
+                      key={`search-card-${profile.id}-index`}
+                      photoUrl={profile.photoUrl}
+                      handle={profile.handle}
+                      location={profile.location}
+                      age={profile.age}
+                      photoCount={profile.photoCount}
+                    />
+                  </div>
+                ))}
+            </SearchCardContainer>
+          ))}
       </MainPage>
     </React.Fragment>
   );
